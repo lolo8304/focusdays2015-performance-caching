@@ -1,0 +1,137 @@
+
+<!DOCTYPE HTML>
+<html>
+ 
+<head>
+        <script type="text/javascript" src="canvasjs-1.7.0/canvasjs.min.js"></script>
+        <script type="text/javascript" src="jquery-1.11.3/jquery-1.11.3.min.js"></script>
+
+
+    <script type="text/javascript">
+        
+        
+    var responseTimeQueue = [];
+    var taskUpdateView;
+    var taskGenerateData;
+    var updateChart = function(reset) {};
+    var updateInterval = 500;
+    var generateUpdateInterval = 200;
+    
+    var pushNewResponseTimes = function(strategy, mean, count) {      
+        strategy = strategy || "none";
+        mean = mean || 100;
+        count = count || 1;
+        for (var j = 0; j < count; j++) {
+            var responseTime = 100 + Math.round(5 + Math.random() *100) - 50;
+            responseTimeQueue.push({
+                strategy: strategy,
+                time: responseTime
+            });
+        };
+        $("#sizeOfResponseQueue").html(responseTimeQueue.length);
+    };
+        
+    function popLastResponseTimes(callback) {
+        var count = responseTimeQueue.length;
+        var nof = count;
+        while (nof-- > 0) {
+            callback(responseTimeQueue.pop().time);
+        }
+        $("#sizeOfResponseQueue").html(responseTimeQueue.length);
+        return count;
+    }
+    
+        
+    window.onload = function () {
+ 
+        var dps = []; // dataPoints
+ 
+        var chart = new CanvasJS.Chart("chartContainer",{
+            title :{
+                text: "Server response time"
+            },          
+            data: [{
+                type: "line",
+                dataPoints: dps 
+            }]
+        });
+ 
+        var xVal = 0;
+        var dataLength = 200; // number of dataPoints visible at any point
+ 
+        updateChart = function (reset) {
+            if (reset) { 
+                var count = dps.length;
+                while (--count >= 0)  { dps.pop(); }
+            }
+            var count = popLastResponseTimes( function(yVal) {
+                dps.push({
+                    x: xVal,
+                    y: yVal
+                });
+                xVal++;
+            });
+            if (dps.length > dataLength ) {
+                while (--count >= 0) {
+                    dps.shift();                
+                }
+            }
+            chart.render();     
+        };
+ 
+        // generates first set of dataPoints
+        updateChart(dataLength); 
+ 
+        // update chart after specified time. 
+        taskUpdateView = setInterval(function(){updateChart();}, updateInterval); 
+
+        // update chart after specified time. 
+        taskGenerateData = setInterval(function(){pushNewResponseTimes("no-cache", 1000, 10); }, generateUpdateInterval); 
+
+ 
+    };
+    </script>
+</head>
+<body>
+    <div id="chartContainer" style="height: 300px; width:100%;">
+    </div>
+    <button id="buttonPause">pause</button>
+    <button id="buttonStop">stop</button>
+    <button id="buttonStart">start</button>
+        <p>Size of queue: <i id="sizeOfResponseQueue"></i></p>
+        
+    <script>
+        $("#buttonPause").on("click", function() {
+            if (taskUpdateView) {
+                clearTimeout(taskUpdateView);
+            }
+        });
+        $("#buttonStop").on("click", function() {
+            if (taskUpdateView) {
+                clearTimeout(taskUpdateView);
+                taskUpdateView = null;
+            }
+            if (taskGenerateData) {
+                clearTimeout(taskGenerateData);
+                taskGenerateData = null;
+            }
+        });
+
+        $("#buttonStart").on("click", function() {
+            // update chart after specified time. 
+            var resetData = taskGenerateData == null ? "reset" : null;
+            if (taskUpdateView) {
+                clearTimeout(taskUpdateView);
+            }
+            taskUpdateView = setInterval(function(){updateChart(resetData);}, updateInterval); 
+    
+            // update chart after specified time. 
+            if (taskGenerateData == null) {
+                taskGenerateData = setInterval(function(){pushNewResponseTimes("no-cache", 1000, 10); }, generateUpdateInterval); 
+            }
+        });
+        
+    </script>
+</body>
+</html>
+ 
