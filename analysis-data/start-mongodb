@@ -1,0 +1,3 @@
+. conf
+PATH=$PATH:$MONGODB/bin
+mongod --httpinterface --rest --dbpath `pwd`/data/db
