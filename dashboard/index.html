@@ -62,7 +62,9 @@
         updateChart = function (reset) {
             if (reset) { 
                 var count = dps.length;
-                while (--count >= 0) Â {Â dps.pop(); }
+                while (--count >= 0)  {
+                     dps.pop(); 
+                }
             }
             var count = popLastResponseTimes( function(yVal) {
                 dps.push({
@@ -93,6 +95,7 @@
     </script>
 </head>
 <body>
+	<h1>focusday 2015</h1>
     <div id="chartContainer" style="height: 300px; width:100%;">
     </div>
     <button id="buttonPause">pause</button>
