@@ -22,13 +22,14 @@
         mean = mean || 100;
         count = count || 1;
         for (var j = 0; j < count; j++) {
+            // FIXME: mesure time at this point....
             var responseTime = 100 + Math.round(5 + Math.random() *100) - 50;
             responseTimeQueue.push({
                 strategy: strategy,
                 time: responseTime
             });
         };
-        $("#sizeOfResponseQueue").html(responseTimeQueue.length);
+	    $("#sizeOfResponseQueue").html(responseTimeQueue.length);
     };
         
     function popLastResponseTimes(callback) {
