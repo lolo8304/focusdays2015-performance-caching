@@ -8,15 +8,21 @@
 
 
     <script type="text/javascript">
-        
+     // this javascript is running in the browser of the client. 
+     // TODO: it should meassuer the delay for a request using the diffrent types of caching
+     // right now, it creates some random values
+     // the values are sent to the server. 
+     // On the server, the restserver.js is running as a nodejs service and stores the POST
+     // request to the MongoDB.    
         
     var responseTimeQueue = [];
     var taskUpdateView;
     var taskGenerateData;
     var updateChart = function(reset) {};
-    var updateInterval = 500;
-    var generateUpdateInterval = 200;
-    
+    var updateInterval = 1500;
+    var generateUpdateInterval = 1200;
+
+    // push time to the restserver -> MongoDB
     var pushNewResponseTimes = function(strategy, mean, count) {      
         strategy = strategy || "none";
         mean = mean || 100;
@@ -24,14 +30,20 @@
         for (var j = 0; j < count; j++) {
             // FIXME: mesure time at this point....
             var responseTime = 100 + Math.round(5 + Math.random() *100) - 50;
-            responseTimeQueue.push({
-                strategy: strategy,
-                time: responseTime
-            });
+            var tupple = {
+                    strategy: strategy,
+                    time: responseTime
+                }
+            responseTimeQueue.push(tupple);
+            send(tupple);
+            console.log("tupple:"+tupple);
+            
         };
 	    $("#sizeOfResponseQueue").html(responseTimeQueue.length);
+	    
     };
-        
+
+    // pop the last n responses from the  restserver -> MongoDB 
     function popLastResponseTimes(callback) {
         var count = responseTimeQueue.length;
         var nof = count;
@@ -42,7 +54,19 @@
         return count;
     }
     
-        
+	// send the given objet to the  restserver -> MongoDB
+	function send(object) {
+		$.ajax({
+			url: "http://localhost/node/product",
+			type: "POST",
+			data: JSON.stringify( object ),
+			contentType: "application/json"
+		}).done(function( msg ) {
+			console.log(msg);
+		});
+	}
+
+    
     window.onload = function () {
  
         var dps = []; // dataPoints

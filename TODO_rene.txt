@@ -1,0 +1,25 @@
+README
+
+* jboss auf konsole starten (bash, /user/rene/jboss/jboss.../  --> bin/standalone.sh
+								rene@RENE_T420S ~/jboss/jboss-as-7.1.1.Final/bin
+								$ ./standalone.sh
+
+
+* HelloWorld projekt in eclipse kompilieren, danache wird war automatisch deployed
+* mongoDB in shell starten mit C:\Program Files\MongoDB\Server\3.0\bin>mongod.exe
+					  daten liegen in c:\data\db
+					  listnes on port 27017
+					  start ....../bin/mongo für db-konsole
+					  
+* focus day dings hat kein html im jar, könnte ein grund sein das kein HTML angzeigt wird :-/
+
+
+TODO: 
+* pom.xml vom FokusDay anschauen, HTML deployen. 
+		ich habe kein servlet, kann ich deshalb nicht starten?
+		
+		
+* -> dynamische seite sollte mit keinen daten erscheinen, daten abfÃ¼llen -> dynamische seite muss funzen
+
+
+* die dinger um die es geht downloaden und installieren
