@@ -29,6 +29,7 @@ Start services
 * restserver.js starten, ist REST frontend for MongoDB
 		 ~/git/focusdays2015-performance-caching/dashboard
 		node restserver.js
+		-> access with http://localhost:3000/products or http://localhost/node/products (over nginx)
 		
 * nginx starten
 		~/Documents/focusday2015/nginx-1.9.3/
