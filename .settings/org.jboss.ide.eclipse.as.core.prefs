@@ -1,0 +1,2 @@
+eclipse.preferences.version=1
+org.jboss.ide.eclipse.as.core.singledeployable.deployableList=dashboard/target/dashboard-0.0.1-SNAPSHOT.war\ntarget/jboss-helloworld-html5.war\ndomainserver/target/domainserver-0.0.1-SNAPSHOT.war\npom.xml\n

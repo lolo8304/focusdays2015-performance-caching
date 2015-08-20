@@ -9,11 +9,13 @@
 
     <script type="text/javascript">
      // this javascript is running in the browser of the client. 
-     // TODO: it should meassuer the delay for a request using the diffrent types of caching
      // right now, it creates some random values
      // the values are sent to the server. 
      // On the server, the restserver.js is running as a nodejs service and stores the POST
      // request to the MongoDB.    
+     // 
+     // FIXME: it should meassuer the delay for a request using the diffrent types of caching
+     // FIXME: store the strategy according to the strategy of the performance caching (no-cache, distributed,...)
         
     var responseTimeQueue = [];
     var taskUpdateView;
@@ -37,10 +39,8 @@
             responseTimeQueue.push(tupple);
             send(tupple);
             console.log("tupple:"+tupple);
-            
         };
 	    $("#sizeOfResponseQueue").html(responseTimeQueue.length);
-	    
     };
 
     // pop the last n responses from the  restserver -> MongoDB 

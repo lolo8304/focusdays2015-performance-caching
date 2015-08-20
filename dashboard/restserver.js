@@ -12,8 +12,6 @@ var restify = require('restify');
 var mongojs = require('mongojs');
 
 
-//var db = mongojs('mongodb://admin:admin123@ds053718.mongolab.com:53718/restifymyapp', ['products']);
-// var db = mongojs('mongodb://localhost:28017/restifymyapp', ['products']);
 var db = mongojs('localhost/nodetest1', ['products']);
 
 // Server
@@ -55,6 +53,7 @@ server.get('/product/:id', function (req, res, next) {
     return next();
 });
 
+// stores to request data to the MongoDB and returns the nummber of items in the DB
 server.post('/product', function (req, res, next) {
    console.log("store /product  ");
     var product = req.params;
@@ -65,7 +64,10 @@ server.post('/product', function (req, res, next) {
             });
             res.end(JSON.stringify(data));
         });
-    console.log("stored   ");
+    
+    // "strategy":"no-cache"
+    // FIXME: get count of all documents of the given strategx....o
+   // console.log("stored   "+db.products.find({"strategy":"no-cache"}).count());
     return next();
 });
 
@@ -99,6 +101,8 @@ server.put('/product/:id', function (req, res, next) {
     return next();
 });
 
+// deletes the given id
+// if {} is sent, all documents in the DB are removed
 server.del('/product/:id', function (req, res, next) {
     db.products.remove({
         id: req.params.id
