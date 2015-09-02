@@ -7,104 +7,61 @@
         <script type="text/javascript" src="jquery-1.11.3/jquery-1.11.3.min.js"></script>
 
 
-    <script type="text/javascript">
-     // this javascript is running in the browser of the client. 
-     // right now, it creates some random values
-     // the values are sent to the server. 
-     // On the server, the restserver.js is running as a nodejs service and stores the POST
-     // request to the MongoDB.    
-     // 
-     // FIXME: store the strategy according to the strategy of the performance caching (no-cache, distributed,...)
-        
+<script type="text/javascript">
+	var POP_ITEMS_FROM_DB = 100;
+    var MAX_STACK_SIZE = 2*POP_ITEMS_FROM_DB; // number of cached ID's (must be bigger then the number or items we receive from the MongoDB)
+    var DATA_LENGTH = 200; // number of dataPoints visible at any point
+    var UPDATE_INTERVAL = 1500; // ms to request the new items of the MongoDB
+
+
+    var stack = []; // queue for Element-ID's
+
+    /** 
+      * push the given id to the stack
+      * returns true if the ID is pushed, false if it was already in the stack
+      */
+	function push(id){
+		while (stack.length > MAX_STACK_SIZE){
+			stack.shift();
+		}
+	    for (var i = 0; i < stack.length; i++) {
+	        if (stack[i] === id) {
+	            return false;
+	        }
+	    }
+		stack.push(id);
+		return true;		
+	}
+
     var responseTimeQueue = [];
     var taskUpdateView;
     var taskGenerateData;
     var updateChart = function(reset) {};
-    var updateInterval = 1500;
     var generateUpdateInterval = 1200;
 
-    // push time to the restserver -> MongoDB
-    var pushNewResponseTimes = function(strategy, mean, count) {      
-        strategy = strategy || "none";
-        mean = mean || 100;
-        count = count || 1;
-        var timeStart = (new Date()).getMilliseconds();
-        var timeEnd = 0;
-         console.log("request...: ");
-         // FIXME: ************************** hier muss ein search auf die DB bzw. WebService bzw. Frontent gemacht werden....
-         // --> nicht node/products requesten sonden daten vom WebService die cecahced werden sollen....
-         $.ajax( 'node/products', {
-             dataType:'json',
-             data:{},
-             type:'GET',
-             success:function ( data ) {
-                 console.log("received data from WebService: " + data.result);
-                 $( '#result' ).text( data.result );
-
-                 // messure time
-                 timeEnd = (new Date()).getMilliseconds();
-                 var responseTime = timeEnd - timeStart;
-                 console.log("done: " +timeEnd +" - "+timeStart+" = " + responseTime +" ms");
-				 // store time in mongoDB
-                 var tupple = {
-                         strategy: strategy,
-                         time: responseTime
-                 }
-                 send(tupple);
-
-                 // FIXME remove responesTimeQueue, should be replaced by mongoDB request -> not available after I split search and graph html
-                 responseTimeQueue.push(tupple);
-                 $("#sizeOfResponseQueue").html(responseTimeQueue.length);
-                          
-             }
-         
-      })
       
       
-    };
-
     // get response times from the MongoDB (filter for cache-stragegy)
-    function popLastResponseTimes(callback) {
-		var count = getFromDb(callback, "no-cache", 1);
-        return count;
-     }
-    
-	// send the given objet to the  restserver -> MongoDB
-	function send(object) {
+    function popLastResponseTimes(callback, n, strategy) {
 		$.ajax({
-			url: "http://localhost/node/product",
-			type: "POST",
-			data: JSON.stringify( object ),
-			contentType: "application/json"
-		}).done(function( msg ) {
-			console.log(msg);
-		});
-	}
-
-	// mongoDB request to get the last time (could be a number of times until the last one we have shown in the graph...)
-	function getFromDb(callback, strategy, n) {
-		var count=1;
-		$.ajax({
-			url: "http://localhost/node/products/55e35cd2ced9357029c6bfcd",
+			url: "http://localhost/node/products/"+n+"/strategy/"+strategy,
  		    dataType: 'json',
 			type: "GET",
             success:function ( data ) {
-                // FIXME: receiving n tupples of [{"_id":"55e149a465fa99542bc2188a","strategy":"no-cache","time":11},...
 		        $.each(data, function(index, element) {
-		            console.log("content: "+element.time);
-		    		callback(element.time);
-		    		count++; 
+			        if (push(element._id)){
+			    		callback(element.time);
+				    } else {
+					    console.log("item "+element._id+" already in stack, ignore");
+					}
 		       	});
-     
-
             }
 		});
-		return count;		
-	}    
+	}
+
+	// create chart
     window.onload = function () {
- 
         var dps = []; // dataPoints
- 
         var chart = new CanvasJS.Chart("chartContainer",{
             title :{
                 text: "Server response time"
@@ -116,41 +73,57 @@
         });
  
         var xVal = 0;
-        var dataLength = 200; // number of dataPoints visible at any point
- 
+
+
+// FIXME funzt nicht wie es sollte
+/* -> ich requeste jede sekunde die letzten100 items
+-> reset vom dps (sollte ich nicht machen...)
+-> jedes einzelne wird über die callback methode hinzugefügt
+-> dann shifte ich um n positionen und rendere erneut...
+
+==> nur die items updaten die noch nicht in der grafik sind
+==> in dps nicht nur x und y sondern auch id speichern
+==> if (newId isNotIn dps): add to graph
+==> if (dps.lenght > maxSize): remove oldest values
+ACHTUNG: callback function wird asynchron aufgerufen, muäs alles dort drin erledigt werden...
+ */     
+
+ 		/**
+ 		  * callback method to update the chart with on item
+ 		  */   
         updateChart = function (reset) {
             if (reset) { 
                 var count = dps.length;
                 while (--count >= 0)  {
                      dps.pop(); 
                 }
+        }
+        popLastResponseTimes( function(yVal) {
+            // the callback function is called for each item 
+            // ignore response-times below zero, they are invalid
+            if (yVal>0){
+            	dps.push({
+	                 x: xVal,
+	                 y: yVal
+	            });
+                xVal++;
             }
-            var count = popLastResponseTimes( function(yVal) {
-                // ignore response-times below zero, they are invalid
-                if (yVal>0){
-	                dps.push({
-	                    x: xVal,
-	                    y: yVal
-	                });
-	                xVal++;
-                }
-            });
-            if (dps.length > dataLength ) {
-                while (--count >= 0) {
-                    dps.shift();                
-                }
+            if (dps.length > DATA_LENGTH ) {
+                dps.shift();                
             }
-            chart.render();     
-        };
- 
-        // generates first set of dataPoints
-        updateChart(dataLength); 
- 
-        // update chart after specified time. 
-        taskUpdateView = setInterval(function(){updateChart();}, updateInterval); 
+            chart.render();
 
-        // update chart after specified time. 
-        taskGenerateData = setInterval(function(){pushNewResponseTimes("no-cache", 1000, 1); }, generateUpdateInterval); 
+        }, POP_ITEMS_FROM_DB, "no-cache");
+
+	}; 
+
+	
+    // generates first set of dataPoints
+    updateChart(DATA_LENGTH); 
+
+    // update chart on a interwal. 
+    taskUpdateView = setInterval(function(){updateChart();}, UPDATE_INTERVAL); 
+
 
  
     };
@@ -188,7 +161,7 @@
             if (taskUpdateView) {
                 clearTimeout(taskUpdateView);
             }
-            taskUpdateView = setInterval(function(){updateChart(resetData);}, updateInterval); 
+            taskUpdateView = setInterval(function(){updateChart(resetData);}, UPDATE_INTERVAL); 
     
             // update chart after specified time. 
             if (taskGenerateData == null) {
