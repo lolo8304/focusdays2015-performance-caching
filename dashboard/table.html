@@ -1,0 +1,30 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+<script>
+var test= angular.module("app", []);
+
+test.controller("appControl", function($scope, $http) {
+	// load any data
+	$http.get("http://www.w3schools.com/angular/customers.php")
+		.success(function (response) {
+			$scope.data = response.records;
+		}
+	);
+
+});
+</script>
+<body ng-app='app' ng-controller='appControl'>
+	    <input type='text' ng-model='search.Country' />
+	    <p></p>
+	    <table>
+	    	<tr><th>Name</th><th>City</th><th>Country</th></tr>
+        <tr ng-repeat="work in data">
+            <td>{{work.Name}}</td>
+            <td>{{work.City}}</td>
+            <td>{{work.Country}}</td>
+        </tr>
+    </table>
+
+	<h5>sample taken from <a target="_blank" href="http://stackoverflow.com/questions/29907075/populate-table-from-json-with-search">stackoverflow</a></h5>
+</body>
+</html>

@@ -1,16 +1,45 @@
+Varianten
+=========
+Testcases
+	restart
+	crash
+	max cache size
+
+no cache
+one cache
+two cache
+two or more distributed caches
+Write and clean cache
+	Strategien zum cache (teile) löschen...
+	
+	
+
+google public data -> alle möglichen Daten... 
+pubsub.com -> der speichert was? aber was auch ;-S
+
+
+
 Funktion / Open Issues
 ======================
- 	dashboard/index.html macht requests auf WebService und misst die response-time.
- 	die response-time von jedem request wird als POST request auf http://localhost/node/product gesendet. NGINX forwarded
+ 	dashboard/search.html macht requests auf WebService und misst die response-time.
+ 	die response-time von jedem request wird als POST request auf http://localhost/no  de/product gesendet. NGINX forwarded
  	den request auf den resterver.js auf dem port 3000 welches die daten dann in die MongoDB (auf port 27017) speichert
  	
- 	TODO: improve index.html
- 		* Zur Zeit werden einfach random nummern generiert
- 		* den Zustand des caches angezeigen bzw. in die MongoDB abspitzen (no-chache / distributed-cache / ...)
+ 	
+ 	TODO :::: CHECK_IN weil die search ein wenig läuft... Nicht perfekt aber immerhin....
+ 	
+ 	TODO: improve statistics.html
+ 	    * cleanup (remove search zeugs, ist jetzt im search.html)
  		* daten für Graph aus der MongoDB holen	
- 		* observer für nginx, restserver.js and mongoDB to prevent strange problems because a service is not up and running
- 		
+ 		x Loadbalancer configured with ngnix. round-robin or lease-connection, host ignored if not available
  			
+	TODO: improve search.html
+		* loggd "failed to commit tuple ...." auch wenn es (manchmal) funktioniert :-/
+		* display result after search
+			* gesuchte resultate
+			* nummer of results in big-cached-db
+			* number of tuples in MongoDB
+
  	TODO: increase resterver.js script das die daten korrekt in der DB abgelegt werden
  		* use DB no-cache, distributed-cache, lost cache
  		* list DB's (and let them dispay in the index page)
@@ -37,6 +66,7 @@ Start services
 		TODO: nginx läuft mit ctrl-C weiter, script bauen zum starten und stopen
 		-> proxy für restserver.js welches als REST service auf port 3000 listnes
 		-> webserver für index page mit graph
+		-> loadbalancer
 
  
 		
