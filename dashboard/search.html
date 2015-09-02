@@ -7,7 +7,6 @@
 $(document).ready(function() {
 
     $(document).on('keypress', '#searchBox', function(e) {
-
         if ( e.keyCode == 13 ) {  // detect the enter key
         	console.log("changed "+ $('#searchBox').val());
         	loadContent($('#searchBox').val());
@@ -15,67 +14,92 @@ $(document).ready(function() {
     });
 
 
+	// load the content from the caching WebService
+	function loadContent(search) {
+		// load any data
+		var timeStart = (new Date()).getMilliseconds();
+		var strategy = "no-cache";
+//		var requestUrl = "http://localhost/table.html?search/"+search;
+		var requestUrl = "http://localhost/data.html";
+		var mydata;
+		$.ajax({
+			url: requestUrl,
+			type: "GET",
+			success: function(result){
+	            // messure time
+	            var timeEnd = (new Date()).getMilliseconds();
+	            var responseTime = timeEnd - timeStart;
+	            console.log("request to "+requestUrl+" done in " + responseTime +" ms");
+				 // store time in mongoDB
+	            var tupple = {
+	                    strategy: strategy,
+	                    time: responseTime
+	            }
+	            send(tupple);
 
- function loadContent(search) {
-	// load any data
-	console.log("search..."+search);
-	var timeStart = (new Date()).getMilliseconds();
-	var strategy = "no-cache";
-
-
+				// render the data in a table
+	            $('#TableCont').empty(); // cleanup div tag
+				var mydata = eval($.parseJSON(result)); // create json-document
+	            var table = $.makeTable(mydata); // make table
+	            $(table).appendTo('#TableCont'); // render table to div-tag
 	
-	$.ajax({
-//		url: "http://localhost/node/products/10/strategy/"+strategy,
-		url: "http://localhost/table.html",
-		type: "GET",
-		success: function(result){
-			console.log(" sucess ");
-            // messure time
-            var timeEnd = (new Date()).getMilliseconds();
-            var responseTime = timeEnd - timeStart;
-            console.log("done: " +timeEnd +" - "+timeStart+" = " + responseTime +" ms");
-			 // store time in mongoDB
-            var tupple = {
-                    strategy: strategy,
-                    time: responseTime
-            }
-            send(tupple);
+			}
+		}).done(function( msg ) {
+		}).fail(function( msg ) {
+			console.log("failed to get content from "+requestUrl+" Response: "+JSON.stringify(msg));  //+JSON.stringify(data));
+		});
+	} // end of function loadContent
 
-		}
-	}).fail(function( msg ) {
-		console.log("failed to get content "+JSON.stringify(msg));  //+JSON.stringify(data));
-	});
 
-	
-	
-}
-
-// send the given objet to the  restserver -> MongoDB
-function send(object) {
-	console.log(" tuple commited ");
-	$.ajax({
-		url: "http://localhost/node/product",
-		type: "POST",
-		success: function(result){
-			console.log(" tuple commitd sucessfully  "+JSON.stringify( object ));
-		},
-		data: JSON.stringify( object ),
-		contentType: "application/json"
-	}).fail(function( msg ) {
-		console.log("failed to commit tupple "+JSON.stringify(msg)); 
-	});
+	// send the given objet to the  restserver -> MongoDB
+	function send(object) {
+		console.log(" tuple commited ");
+		$.ajax({
+			url: "http://localhost/node/product",
+			type: "POST",
+			success: function(result){
+				console.log(" tuple commitd sucessfully  "+JSON.stringify( object ));
+			},
+			data: JSON.stringify( object ),
+			contentType: "application/json"
+		});
 	}
-});
+
+
+	/** 
+	  * render the json document into a HTML table 
+	  * found on http://stackoverflow.com/questions/1051061/convert-json-array-to-an-html-table-in-jquery
+	  *          "Make a HTML Table from a JSON array of Objects by extending $ as shown below"
+	  **/	
+	$.makeTable = function (mydata) {
+	    var table = $('<table border=1>');
+	    var tblHeader = "<tr>";
+	    for (var k in mydata[0]) tblHeader += "<th>" + k + "</th>";
+	    tblHeader += "</tr>";
+	    $(tblHeader).appendTo(table);
+	    $.each(mydata, function (index, value) {
+	        var TableRow = "<tr>";
+	        $.each(value, function (key, val) {
+	            TableRow += "<td>" + val + "</td>";
+	        });
+	        TableRow += "</tr>";
+	        $(table).append(TableRow);
+	    });
+	    return ($(table));
+	};
+
+}); // end of $(document).ready
 
 </script>
 <body>
 	<h1>focusday 2015 - search</h1>
-	Enter text and hit enter:
-	<form  rel="myMethod()">
-	  <input type='text' id="searchBox" />
+	Enter search criteria and hit enter:<br></br>
+	<input type='text' id="searchBox" />
 	    <p></p>
 	<div id="result"></div>
-	<h5>sample taken from <a target="_blank" href="http://stackoverflow.com/questions/29907075/populate-table-from-json-with-search">stackoverflow</a></h5>
-</form>
+
+	<h2>requested data</h2>
+	<div id="TableCont" class="TableCont">table</div>
+
 </body>
 </html>

@@ -26,19 +26,18 @@ Funktion / Open Issues
  	den request auf den resterver.js auf dem port 3000 welches die daten dann in die MongoDB (auf port 27017) speichert
  	
  	
- 	TODO :::: CHECK_IN weil die search ein wenig läuft... Nicht perfekt aber immerhin....
  	
  	TODO: improve statistics.html
- 	    * cleanup (remove search zeugs, ist jetzt im search.html)
- 		* daten für Graph aus der MongoDB holen	
+ 	    x cleanup (remove search zeugs, ist jetzt im search.html)
+ 		x daten für Graph aus der MongoDB holen	
  		x Loadbalancer configured with ngnix. round-robin or lease-connection, host ignored if not available
  			
 	TODO: improve search.html
-		* loggd "failed to commit tuple ...." auch wenn es (manchmal) funktioniert :-/
-		* display result after search
-			* gesuchte resultate
-			* nummer of results in big-cached-db
-			* number of tuples in MongoDB
+		x loggd "failed to commit tuple ...." auch wenn es (manchmal) funktioniert :-/
+		o display result after search
+			X gesuchte resultate
+			0 nummer of results in big-cached-db
+			0 number of tuples in MongoDB
 
  	TODO: increase resterver.js script das die daten korrekt in der DB abgelegt werden
  		* use DB no-cache, distributed-cache, lost cache

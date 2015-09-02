@@ -14,7 +14,7 @@
     var UPDATE_INTERVAL = 1500; // ms to request the new items of the MongoDB
 
 
-    var stack = []; // queue for Element-ID's
+    var stack = []; // queue for Element-ID's to filter new values
 
     /** 
       * push the given id to the stack
@@ -32,13 +32,6 @@
 		stack.push(id);
 		return true;		
 	}
-
-    var responseTimeQueue = [];
-    var taskUpdateView;
-    var taskGenerateData;
-    var updateChart = function(reset) {};
-    var generateUpdateInterval = 1200;
-
       
       
     // get response times from the MongoDB (filter for cache-stragegy)
@@ -51,8 +44,8 @@
 		        $.each(data, function(index, element) {
 			        if (push(element._id)){
 			    		callback(element.time);
-				    } else {
-					    console.log("item "+element._id+" already in stack, ignore");
+				    //} else {
+					//  ("item "+element._id+" already in stack, ignore");
 					}
 		       	});
             }
@@ -74,31 +67,12 @@
  
         var xVal = 0;
 
-
-// FIXME funzt nicht wie es sollte
-/* -> ich requeste jede sekunde die letzten100 items
--> reset vom dps (sollte ich nicht machen...)
--> jedes einzelne wird über die callback methode hinzugefügt
--> dann shifte ich um n positionen und rendere erneut...
-
-==> nur die items updaten die noch nicht in der grafik sind
-==> in dps nicht nur x und y sondern auch id speichern
-==> if (newId isNotIn dps): add to graph
-==> if (dps.lenght > maxSize): remove oldest values
-ACHTUNG: callback function wird asynchron aufgerufen, muäs alles dort drin erledigt werden...
- */     
-
  		/**
  		  * callback method to update the chart with on item
  		  */   
-        updateChart = function (reset) {
-            if (reset) { 
-                var count = dps.length;
-                while (--count >= 0)  {
-                     dps.pop(); 
-                }
-        }
-        popLastResponseTimes( function(yVal) {
+        updateChart = function () {
+
+ 			popLastResponseTimes( function(yVal) {
             // the callback function is called for each item 
             // ignore response-times below zero, they are invalid
             if (yVal>0){
@@ -119,7 +93,7 @@ ACHTUNG: callback function wird asynchron aufgerufen, muäs alles dort drin erled
 
 	
     // generates first set of dataPoints
-    updateChart(DATA_LENGTH); 
+    updateChart(); 
 
     // update chart on a interwal. 
     taskUpdateView = setInterval(function(){updateChart();}, UPDATE_INTERVAL); 
@@ -133,43 +107,6 @@ ACHTUNG: callback function wird asynchron aufgerufen, muäs alles dort drin erled
 	<h1>focusday 2015</h1>
     <div id="chartContainer" style="height: 300px; width:100%;">
     </div>
-    <button id="buttonPause">pause</button>
-    <button id="buttonStop">stop</button>
-    <button id="buttonStart">start</button>
-        <p>Size of queue: <i id="sizeOfResponseQueue"></i></p>
-        
-    <script>
-        $("#buttonPause").on("click", function() {
-            if (taskUpdateView) {
-                clearTimeout(taskUpdateView);
-            }
-        });
-        $("#buttonStop").on("click", function() {
-            if (taskUpdateView) {
-                clearTimeout(taskUpdateView);
-                taskUpdateView = null;
-            }
-            if (taskGenerateData) {
-                clearTimeout(taskGenerateData);
-                taskGenerateData = null;
-            }
-        });
-
-        $("#buttonStart").on("click", function() {
-            // update chart after specified time. 
-            var resetData = taskGenerateData == null ? "reset" : null;
-            if (taskUpdateView) {
-                clearTimeout(taskUpdateView);
-            }
-            taskUpdateView = setInterval(function(){updateChart(resetData);}, UPDATE_INTERVAL); 
-    
-            // update chart after specified time. 
-            if (taskGenerateData == null) {
-                taskGenerateData = setInterval(function(){pushNewResponseTimes("no-cache", 1000, 10); }, generateUpdateInterval); 
-            }
-        });
-        
-    </script>
 </body>
 </html>
  
