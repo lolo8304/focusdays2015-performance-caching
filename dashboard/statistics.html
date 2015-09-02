@@ -9,8 +9,8 @@
 
 <script type="text/javascript">
 	var POP_ITEMS_FROM_DB = 100;
-    var MAX_STACK_SIZE = 2*POP_ITEMS_FROM_DB; // number of cached ID's (must be bigger then the number or items we receive from the MongoDB)
-    var DATA_LENGTH = 200; // number of dataPoints visible at any point
+    var DATA_LENGTH = 100; // number of dataPoints visible at any point
+    var MAX_STACK_SIZE = (DATA_LENGTH + POP_ITEMS_FROM_DB); // number of cached ID's (must be bigger then the number or items we receive from the MongoDB)
     var UPDATE_INTERVAL = 1500; // ms to request the new items of the MongoDB
 
 
